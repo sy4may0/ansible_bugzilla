@@ -1,0 +1,49 @@
+---
+- name: Check bugzilla installed.
+  ansible.builtin.stat:
+    path: "{{ bugzilla_httpd_documentdir }}/bugzilla"
+  register: bugzilla_installed
+
+- name: Install bugzilla.
+  block:
+    - name: Git clone bugzilla.git.
+      ansible.builtin.git:
+        repo: 'https://github.com/bugzilla/bugzilla.git'
+        dest: "{{ bugzilla_httpd_documentdir }}/bugzilla"
+        version: "{{ bugzilla_git_branch_name }}"
+    
+    - name: Deploy bugzilla setup answer file.
+      ansible.builtin.template:
+        src: bugzilla_check_answer.j2
+        dest: /tmp/answer
+        owner: root
+        group: apache
+        mode: 0640
+   
+    - name: Configure bugzilla localconfig.
+      ansible.builtin.template:
+        src: bugzilla_localconfig.j2 
+        dest: "{{ bugzilla_httpd_documentdir }}/bugzilla/localconfig"
+        owner: root
+        group: root
+        mode: '0644'
+        backup: yes
+
+    - name: Check bugzilla setup.
+      ansible.builtin.shell: "set -o pipefail && /usr/bin/perl checksetup.pl /tmp/answer"
+      args:
+        chdir: "{{ bugzilla_httpd_documentdir }}/bugzilla"
+      register: bugzilla_setup
+    
+  when: not bugzilla_installed.stat.exists
+  rescue:
+    - name: Remove bugzilla directory
+      ansible.builtin.file:
+        path: "{{ bugzilla_httpd_documentdir }}/bugzilla"
+        state: absent
+
+- name: restart httpd.
+  ansible.builtin.systemd:
+    name: httpd
+    state: restarted
+  when: bugzilla_setup is defined and bugzilla_setup.changed

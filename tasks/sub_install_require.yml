@@ -1,0 +1,28 @@
+---
+- name: install epel
+  ansible.builtin.dnf:
+    name: epel-release
+    state: latest
+
+- name: install required packages
+  ansible.builtin.dnf:
+    name: "{{ item }}"
+    state: latest
+  loop: "{{ bugzilla_required_packages }}"
+
+- name: install optional packages
+  ansible.builtin.dnf:
+    name: "{{ item }}"
+    state: latest
+  loop: "{{ bugzilla_optional_packages }}"
+  when: bugzilla_install_optional_packages
+
+- name: Install required perl module
+  community.general.cpanm:
+    name: "{{ item }}"
+  loop: "{{ bugzilla_required_perl_modules }}"
+
+- name: Install optional perl module
+  community.general.cpanm:
+    name: "{{ item }}"
+  loop: "{{ bugzilla_optional_perl_modules }}"

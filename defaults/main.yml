@@ -1,0 +1,26 @@
+---
+# defaults file for bugzilla
+
+# Install bugzilla optional requirements packages.
+bugzilla_install_optional_packages: yes
+
+# Bugzilla database user password
+bugzilla_db_password: 'bugzilla'
+
+# Bugzilla httpd servername.
+bugzilla_httpd_servername: "{{ inventory_hostname }}"
+
+# Bugzilla httpd documentroot directory.
+# You have to specify child of /var/www/cgi-bin.
+bugzilla_httpd_documentdir: "/var/www/cgi-bin"
+
+# Mysql official repository URL.
+bugzilla_mysql_repository: https://dev.mysql.com/get/mysql84-community-release-el9-1.noarch.rpm
+
+# Bugzilla git branch name.
+bugzilla_git_branch_name: 5.2
+
+# Bugzilla Administrator settings.
+bugzilla_admin_email: 'root@localhost.localdomain'
+bugzilla_admin_password: 'admin00'
+bugzilla_admin_realname: 'suzune_shioyama'

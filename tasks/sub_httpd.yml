@@ -1,0 +1,22 @@
+---
+- name: Configure httpd
+  ansible.builtin.template:
+    src: bugzilla_httpd.conf.j2 
+    dest: /etc/httpd/conf.d/bugzilla.conf
+    owner: root
+    group: root
+    mode: '0644'
+    backup: yes
+  register: httpd_conf
+
+- name: Restart httpd
+  ansible.builtin.systemd:
+    name: httpd
+    state: restarted
+  when: httpd_conf.changed
+
+- name: Enable httpd
+  ansible.builtin.systemd:
+    name: httpd
+    enabled: yes
+    state: started

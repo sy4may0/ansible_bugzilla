@@ -1,0 +1,15 @@
+<VirtualHost *:80>
+    ServerName {{ bugzilla_httpd_servername }}
+    DocumentRoot {{ bugzilla_httpd_documentdir }}/bugzilla
+
+    <Directory {{ bugzilla_httpd_documentdir }}/bugzilla>
+        AddHandler cgi-script .cgi
+        Options +ExecCGI +FollowSymLinks
+        DirectoryIndex index.cgi
+        AllowOverride All
+        Require all granted
+    </Directory>
+
+    ErrorLog logs/bugzilla_error_log
+    CustomLog logs/bugzilla_access_log combined 
+</VirtualHost>

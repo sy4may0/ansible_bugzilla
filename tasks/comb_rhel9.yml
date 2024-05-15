@@ -1,0 +1,33 @@
+---
+- name: Import postgresql tasks.
+  ansible.builtin.import_tasks:
+    file: sub_mysql.yml
+  tags:
+    - bugzilla
+    - bugzilla_mysql
+    - configuration
+
+- name: Import required package tasks.
+  ansible.builtin.import_tasks:
+    file: sub_install_require.yml
+  tags:
+    - bugzilla
+    - bugzilla_install_require
+    - configuration
+
+- name: Import httpd tasks.
+  ansible.builtin.import_tasks:
+    file: sub_httpd.yml
+  tags:
+    - bugzilla
+    - bugzilla_httpd
+    - configuration
+
+- name: Import bugzilla tasks.
+  ansible.builtin.import_tasks:
+    file: sub_bugzilla.yml
+  tags:
+    - bugzilla
+    - bugzilla_bugzilla
+    - configuration
+

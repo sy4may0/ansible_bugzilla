@@ -1,0 +1,9 @@
+---
+- name: Import required package tasks.
+  ansible.builtin.import_tasks:
+    file: sub_install_require.yml
+  tags:
+    - bugzilla
+    - bugzilla_install_require
+    - configuration
+

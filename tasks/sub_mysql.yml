@@ -1,0 +1,111 @@
+---
+- name: Check mysql installed.
+  ansible.builtin.shell: "rpm -qa | fgrep mysql-community-server"
+  register: mysql_installed
+  changed_when: false
+  check_mode: false
+  failed_when: mysql_installed.rc not in [0, 1]
+
+- name: Install mysql if not installed.
+  block:
+    - name: Download mysql repository.
+      ansible.builtin.get_url:
+        url: "{{ bugzilla_mysql_repository }}"
+        dest: /tmp/mysql.rpm
+        headers:
+          User-Agent: "curl/7.29.0"
+    
+    - name: Install mysql repository.
+      ansible.builtin.dnf:
+        name: /tmp/mysql.rpm
+        state: present
+        disable_gpg_check: yes
+    
+    - name: Install mysql
+      ansible.builtin.dnf:
+        name: "{{ item }}"
+        state: latest
+      loop:
+        - mysql-community-server
+        - mysql-community-devel
+        - mysql-community-client
+        - python3-PyMySQL
+
+    - name: Remove rpm file.
+      ansible.builtin.file:
+        path: /tmp/mysql.rpm
+        state: absent
+
+    - name: Start mysqld
+      ansible.builtin.systemd:
+        name: mysqld
+        enabled: yes
+        state: started
+
+    - name: Get root password.
+      ansible.builtin.shell: "cat /var/log/mysqld.log | fgrep 'A temporary password is' | awk '{print $(NF)}'"
+      changed_when: false
+      check_mode: false
+      register: mysql_log_root_pass
+      failed_when: mysql_log_root_pass.rc not in [0]
+
+    - name: Set mysql temporary password
+      set_fact:
+        __mysql_temp_pass: "{{ mysql_log_root_pass.stdout | trim }}"
+  rescue:
+    - name: Remove mysql
+      ansible.builtin.dnf:
+        name: "{{ item }}"
+        state: absent
+      loop:
+        - mysql-community-server
+        - mysql-community-devel
+        - mysql-community-client
+        - python3-PyMySQL
+  when: mysql_installed.rc != 0
+
+- name: Configure mysql.
+  ansible.builtin.template:
+    src: my.cnf.j2
+    dest: /etc/my.cnf
+    owner: root
+    group: root
+    mode: '0644'
+    backup: yes
+  register: mysql_conf
+
+- name: Restart mysql
+  ansible.builtin.systemd:
+    name: mysqld
+    state: restarted
+  when: mysql_conf.changed
+
+- name: Change mysql root login method
+  ansible.builtin.shell: |
+      mysql --user root --password={{ __mysql_temp_pass }} --connect-expired-password --execute="ALTER USER 'root'@'localhost' IDENTIFIED WITH auth_socket;"
+  when: __mysql_temp_pass is defined
+
+- name: Create databse
+  block:
+    - name: Create bug database
+      community.mysql.mysql_db:
+        login_unix_socket: /var/lib/mysql/mysql.sock
+        login_user: root
+        login_password: ''
+        name: bugs
+        state: present
+        encoding: utf8
+        collation: utf8_general_ci
+    
+    - name: Create user and permission
+      community.mysql.mysql_user:
+        login_unix_socket: /var/lib/mysql/mysql.sock
+        login_user: root
+        login_password: ''
+        name: bugs
+        password: "{{ bugzilla_db_password }}"
+        host: localhost
+        priv: 'bugs.*:ALL'
+        state: present
+        append_privs: yes
+  when: not ansible_check_mode

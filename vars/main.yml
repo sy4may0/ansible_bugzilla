@@ -1,0 +1,78 @@
+---
+# vars file for bugzilla
+bugzilla_support_rhel:
+  - RedHat
+  - AlmaLinux
+  - CentOS
+
+bugzilla_required_packages:
+  - git 
+  - httpd 
+  - httpd-devel 
+  - gcc 
+  - mod_perl 
+  - mod_perl-devel 
+  - perl-CPAN
+  - perl-App-cpanminus
+  - perl-DBIx-Connector
+  - perl-DBD-MySQL
+
+bugzilla_required_perl_modules:
+  - autodie
+  - CGI
+  - Date::Format
+  - DateTime
+  - DateTime::TimeZone
+  - Digest::SHA
+  - Email::MIME
+  - Email::Sender
+  - fields
+  - JSON::XS
+  - List::MoreUtils
+  - Math::Random::ISAAC
+  - Memoize
+  - Safe
+  - Template
+  - URI
+
+bugzilla_optional_packages:
+  - gd-devel 
+  - graphviz 
+  - patchutils 
+
+bugzilla_optional_perl_modules:
+  - Apache2::SizeLimit
+  - Authen::Radius
+  - Authen::SASL
+  - Cache::Memcached
+  - Chart::Lines
+  - Daemon::Generic
+  - Email::Reply
+  - Encode
+  - Encode::Detect
+  - File::Copy::Recursive
+  - File::MimeInfo::Magic
+  - File::Which
+  - GD
+  - GD::Graph
+  - GD::Text
+  - HTML::FormatText::WithLinks
+  - HTML::Parser
+  - HTML::Scrubber
+  - IO::Scalar
+  - JSON::RPC
+  - LWP::UserAgent
+  - MIME::Parser
+  - mod_perl2
+  - Net::LDAP
+  - Net::SMTP::SSL
+  - PatchReader
+  - SOAP::Lite
+  - Template::Plugin::GD::Image
+  - Test::Taint
+  - TheSchwartz
+  - XMLRPC::Lite
+  - XML::Twig
+
+bugzilla_mysql_max_allowed_packet: '100M'
+bugzilla_mysql_ft_min_word_len: 2
